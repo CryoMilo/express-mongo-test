@@ -5,9 +5,15 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 
 // COMMON
-const invalidCred = () => {
+const invalidCred = (res) => {
 	return res.status(401).json({
 		message: "Invalid credentials",
+	});
+};
+
+const generateJWT = (id) => {
+	return jwt.sign({ userId: id }, process.env.JWT_SECRET_KEY, {
+		expiresIn: "1hr",
 	});
 };
 
@@ -58,24 +64,34 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
 	const { name, email, password } = req.body;
 
-	const userExists = await User.findOne({ email: email });
+	const userExists = await User.findOne({ email: email, name: name });
 
 	if (!userExists) {
-		invalidCred();
+		invalidCred(res);
 	}
 
-	const passwordsMatch = await bcrypt.compare(password, userExists.password);
-
-	if (passwordsMatch) {
-		res.status(200).json({
-			message: "You're In!",
-			data: {
-				_id: userExists._id,
-				name: name,
-				email: email,
-			},
-		});
-	} else invalidCred();
+	if (userExists) {
+		const passwordsMatch = await bcrypt.compare(password, userExists.password);
+		if (passwordsMatch) {
+			generateJWT(userExists._id);
+			res.status(200).json({
+				message: "You're In!",
+				data: {
+					_id: userExists._id,
+					name: name,
+					email: email,
+					token: token,
+				},
+			});
+		} else invalidCred();
+	}
 });
 
-module.exports = { findUsers, registerUser, loginUser };
+// @desc		get user data
+// @route		POST /api/users/me
+// @access	Private
+const getMe = asyncHandler(async (req, res) => {
+	res.status(200).json({ message: "Displaying user data" });
+});
+
+module.exports = { findUsers, registerUser, loginUser, getMe };

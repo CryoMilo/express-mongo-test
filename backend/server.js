@@ -3,6 +3,7 @@ const colors = require("colors");
 const { errorMiddleware } = require("./middleware/errorMiddleware");
 const dotenv = require("dotenv").config();
 const connectDB = require("./config/db");
+const { protect } = require("./middleware/authMiddleware");
 
 const port = process.env.PORT || 5000;
 
@@ -17,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/goals", require("./routes/goalRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/users", protect, require("./routes/userRoutes"));
 
 // Middleware to modify throw Errors
 app.use(errorMiddleware);
