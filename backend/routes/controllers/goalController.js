@@ -1,22 +1,68 @@
-const getGoals = (req, res) => {
-	res.status(200).json({ message: "Get GGoals" });
-};
+const Goal = require("../../model/goalModel");
 
-const postGoals = (req, res) => {
-	if (!req.body.text) {
-		res.status(400);
-		throw new Error("Cap. There is no damn input mate");
+// GET
+const getGoals = async (req, res) => {
+	try {
+		const goals = await Goal.find();
+		res.status(200).json(goals);
+	} catch (error) {
+		next(error);
+		// Pass the Error into errorMiddleware
 	}
-
-	res.status(200).json({ message: "Post Goals" });
 };
 
-const updateGoals = (req, res) => {
-	res.status(200).json({ message: "Update Goals" });
+// POST
+const postGoals = async (req, res) => {
+	try {
+		if (!req.body.text) {
+			res.status(400).json({ message: "There is no input" });
+			return;
+		}
+
+		const goal = await Goal.create({ text: req.body.text });
+		res.status(200).json({ message: "New Goal Created", data: goal });
+	} catch (error) {
+		next(error);
+	}
 };
 
-const deleteGoals = (req, res) => {
-	res.status(200).json({ message: "Delete Goals" });
+// UPDATE
+const updateGoals = async (req, res) => {
+	try {
+		const requiredDocument = await Goal.findById(req.params.id);
+
+		if (!requiredDocument) {
+			res.status(404).json({ message: "Data Not Found!" });
+			return;
+		}
+
+		const updateOptions = { new: true }; // Ensure updated document is returned
+		const goal = await Goal.findByIdAndUpdate(
+			req.params.id,
+			{ text: req.body.text },
+			updateOptions
+		);
+
+		res.status(200).json({ message: "Goal Updated!", data: goal });
+	} catch (error) {
+		next(error);
+	}
+};
+
+// DELETE
+const deleteGoals = async (req, res) => {
+	try {
+		const goal = await Goal.findByIdAndDelete(req.params.id);
+
+		if (!goal) {
+			res.status(404).json({ message: "Data Not Found!" });
+			return;
+		}
+
+		res.status(200).json({ message: "Goal Deleted", data: goal });
+	} catch (error) {
+		next(error);
+	}
 };
 
 module.exports = { getGoals, postGoals, updateGoals, deleteGoals };
