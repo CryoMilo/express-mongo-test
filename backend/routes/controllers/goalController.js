@@ -1,7 +1,7 @@
 const Goal = require("../../model/goalModel");
 
 // GET
-const getGoals = async (req, res) => {
+const getGoals = async (req, res, next) => {
 	try {
 		const goals = await Goal.find();
 		res.status(200).json(goals);
@@ -12,7 +12,7 @@ const getGoals = async (req, res) => {
 };
 
 // POST
-const postGoals = async (req, res) => {
+const postGoals = async (req, res, next) => {
 	try {
 		if (!req.body.text) {
 			res.status(400).json({ message: "There is no input" });
@@ -27,7 +27,7 @@ const postGoals = async (req, res) => {
 };
 
 // UPDATE
-const updateGoals = async (req, res) => {
+const updateGoals = async (req, res, next) => {
 	try {
 		const requiredDocument = await Goal.findById(req.params.id);
 
@@ -50,7 +50,7 @@ const updateGoals = async (req, res) => {
 };
 
 // DELETE
-const deleteGoals = async (req, res) => {
+const deleteGoals = async (req, res, next) => {
 	try {
 		const goal = await Goal.findByIdAndDelete(req.params.id);
 
